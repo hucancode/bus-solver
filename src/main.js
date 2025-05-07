@@ -286,14 +286,14 @@ const sketch = (p) => {
       }
     }
 
-    const addBusButton = p.createButton("Spawn Bus");
+    const addBusButton = p.createButton("Bus +1");
     addBusButton.position(10, 10);
     addBusButton.mousePressed(() => {
       const location = p.random(labels);
       buses.push(new Bus("bus" + buses.length, location));
     });
 
-    const addReqButton = p.createButton("Spawn Request");
+    const addReqButton = p.createButton("Request +1");
     addReqButton.position(200, 10);
     addReqButton.mousePressed(() => {
       let from = p.random(labels);
@@ -302,6 +302,19 @@ const sketch = (p) => {
         to = p.random(labels);
       } while (to === from);
       requests.push({ from, to });
+    });
+    const addReq10xButton = p.createButton("Request +10");
+    addReq10xButton.position(300, 10);
+    addReq10xButton.mousePressed(() => {
+      let n = 10;
+      while(n-- > 0) {
+        let from = p.random(labels);
+        let to;
+        do {
+          to = p.random(labels);
+        } while (to === from);
+        requests.push({ from, to });
+      }
     });
 
     const pausePlayButton = p.createButton("Pause");
@@ -345,9 +358,17 @@ const sketch = (p) => {
     p.textSize(20);
     p.textStyle(p.BOLD);
     for (let [label, pos] of graph.positions) {
-      p.fill(0);
+      if (label == requestFrom) {
+        p.fill(120)
+      } else {
+        p.fill(0)
+      }
       p.ellipse(pos.x, pos.y, 30, 30);
-      p.fill(255);
+      if (requests.some(e => e.from == label)) {
+        p.fill(0xff, 0xf3, 0x80);
+      } else {
+        p.fill(255);
+      }
       p.textAlign(p.CENTER, p.CENTER);
       p.text(label, pos.x, pos.y);
     }
