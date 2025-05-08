@@ -97,6 +97,20 @@ class Bus {
     if (this.passengers.length >= this.capacity) {
       return { accepted: false };
     }
+    let existingPickup = this.destinations.indexOf(request.from);
+    let existingDropoff = this.destinations.indexOf(request.to, existingPickup);
+    if (existingPickup < existingDropoff && existingPickup >= 0) {
+      return {
+        accepted: true,
+        plan: {
+          insertPickup: existingPickup,
+          insertDropoff: existingDropoff,
+          destinations: this.destinations,
+        },
+        cost: 0,
+      };
+    }
+
     let bestTotalCost = Infinity;
     let bestPlan = null;
 
@@ -128,6 +142,8 @@ class Bus {
         }
 
         if (!violates) {
+          // reconsider this, totalCost should be the extra cost happen when we pickup this request
+          // totalCost should be 0 if the request happen to be alreay on the destinations
           const etaNewRequest = timeMap.get(request.to);
           const totalCost = etaNewRequest + delayCost;
           if (totalCost < bestTotalCost) {
