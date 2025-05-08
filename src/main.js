@@ -281,7 +281,6 @@ const NODES = labels.length;
 
 const sketch = (p) => {
   p.setup = () => {
-    console.log(p5);
     p.createCanvas(WIDTH, HEIGHT);
     graph = new Graph();
 
@@ -310,7 +309,7 @@ const sketch = (p) => {
     });
 
     const addReqButton = p.createButton("Request +1");
-    addReqButton.position(200, 10);
+    addReqButton.position(100, 10);
     addReqButton.mousePressed(() => {
       let from = p.random(labels);
       let to;
@@ -320,7 +319,7 @@ const sketch = (p) => {
       requests.push({ from, to });
     });
     const addReq10xButton = p.createButton("Request +10");
-    addReq10xButton.position(300, 10);
+    addReq10xButton.position(200, 10);
     addReq10xButton.mousePressed(() => {
       let n = 10;
       while(n-- > 0) {
@@ -333,17 +332,24 @@ const sketch = (p) => {
       }
     });
 
+
+    const stepButton = p.createButton("Step");
+    stepButton.position(400, 10);
+    stepButton.mousePressed(() => {
+      if (isPaused) stepOnce = true;
+    });
+    stepButton.hide();
+
     const pausePlayButton = p.createButton("Pause");
-    pausePlayButton.position(400, 10);
+    pausePlayButton.position(300, 10);
     pausePlayButton.mousePressed(() => {
       isPaused = !isPaused;
       pausePlayButton.html(isPaused ? "Play" : "Pause");
-    });
-
-    const stepButton = p.createButton("Step");
-    stepButton.position(600, 10);
-    stepButton.mousePressed(() => {
-      if (isPaused) stepOnce = true;
+      if (isPaused) {
+        stepButton.show();
+      } else {
+        stepButton.hide();
+      }
     });
 
     routeTable = p.createElement("table");
