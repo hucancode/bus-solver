@@ -297,7 +297,9 @@ const sketch = (p) => {
         const a = labels[i];
         const b = labels[j];
         const d = graph.distance(a, b);
-        graph.addEdge(a, b, d);
+        if (p.random(1, 100) < 30) {
+          graph.addEdge(a, b, d);
+        }
       }
     }
 
