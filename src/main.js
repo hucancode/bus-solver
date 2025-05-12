@@ -416,7 +416,7 @@ const sketch = (p) => {
         const heat = Math.min(1.0, usage / totalUsage * Math.sqrt(graph.edges.size));
         const edgeColor = p.lerpColor(cold, hot, heat);
         p.stroke(edgeColor);
-        p.strokeWeight(2);
+        p.strokeWeight(1+heat*2);
         p.line(a.x, a.y, b.x, b.y);
         drawnEdges.add(key);
       }
