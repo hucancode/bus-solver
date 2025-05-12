@@ -4,6 +4,7 @@ class Graph {
   constructor() {
     this.edges = new Map();
     this.positions = new Map();
+    this.edgeUsage = new Map(); // Track edge usage for undirected edges
   }
 
   addNode(label, x, y) {
@@ -14,6 +15,22 @@ class Graph {
   addEdge(from, to, cost) {
     this.edges.get(from).push({ to, cost });
     this.edges.get(to).push({ to: from, cost });
+    // Store usage for undirected edge only once
+    this.edgeUsage.set(this._edgeKey(from, to), 0);
+  }
+
+  incrementEdgeUsage(from, to) {
+    const key = this._edgeKey(from, to);
+    this.edgeUsage.set(key, (this.edgeUsage.get(key) || 0) + 1);
+  }
+
+  getEdgeUsage(from, to) {
+    return this.edgeUsage.get(this._edgeKey(from, to)) || 0;
+  }
+
+  _edgeKey(a, b) {
+    // Always store as sorted key for undirected edge
+    return [a, b].sort().join('-');
   }
 
   getNeighbors(node) {
@@ -204,6 +221,9 @@ class Bus {
       const dir = p5.Vector.sub(targetVec, this.exactPos);
 
       if (dir.mag() <= 5) {
+        // Increment edge usage when bus reaches the next node
+        graph.incrementEdgeUsage(this.location, this.currentTarget);
+
         this.exactPos = targetVec.copy();
         this.location = this.currentTarget;
         this.route.shift();
@@ -369,15 +389,38 @@ const sketch = (p) => {
 
     p.background(255);
 
-    p.stroke(200);
+    // Draw edges with color based on normalized heat map using lerpColor
+    // Only draw each undirected edge once
+    let totalUsage = 0;
+    const drawnEdges = new Set();
+    for (let [from, neighbors] of graph.edges) {
+      for (let { to } of neighbors) {
+        const key = graph._edgeKey(from, to);
+        if (drawnEdges.has(key)) continue;
+        totalUsage += graph.getEdgeUsage(from, to);
+        drawnEdges.add(key);
+      }
+    }
+    if (totalUsage === 0) totalUsage = 1;
+
+    const cold = p.color(0, 100, 255, 25);
+    const hot = p.color(255, 0, 0, 255);
+    drawnEdges.clear();
     for (let [from, neighbors] of graph.edges) {
       const a = graph.positions.get(from);
       for (let { to } of neighbors) {
+        const key = graph._edgeKey(from, to);
+        if (drawnEdges.has(key)) continue;
         const b = graph.positions.get(to);
+        const usage = graph.getEdgeUsage(from, to);
+        const heat = Math.min(1.0, usage / totalUsage * Math.sqrt(graph.edges.size));
+        const edgeColor = p.lerpColor(cold, hot, heat);
+        p.stroke(edgeColor);
+        p.strokeWeight(2);
         p.line(a.x, a.y, b.x, b.y);
+        drawnEdges.add(key);
       }
     }
-
     p.noStroke();
     p.textSize(20);
     p.textStyle(p.BOLD);
